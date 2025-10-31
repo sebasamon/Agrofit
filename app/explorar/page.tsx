@@ -6,11 +6,23 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
-import { getProjectPreviews } from '@/lib/mockData';
+import { getActiveProjects } from '@/lib/projectStorage';
 import { FinancingType, ProjectPreview } from '@/types';
 
 export default function ExplorarProyectos() {
-  const allProjects = getProjectPreviews();
+  const activeProjects = getActiveProjects();
+  const allProjects: ProjectPreview[] = activeProjects.map((project) => ({
+    id: project.id,
+    farmName: project.farmerProfile.farmName,
+    location: `${project.farmerProfile.location.municipality}, ${project.farmerProfile.location.department}`,
+    cropType: project.farmerProfile.cropType,
+    farmSize: project.farmerProfile.farmSize,
+    financingType: project.financingNeeds.financingType,
+    amount: project.financingNeeds.amount,
+    esgScore: project.esgScore,
+    profileImage: project.farmerProfile.profileImage,
+    featured: project.esgScore.overall >= 85
+  }));
   const [filteredProjects, setFilteredProjects] = useState<ProjectPreview[]>(allProjects);
   const [showFilters, setShowFilters] = useState(false);
 

@@ -6,20 +6,36 @@ import { Shield, CheckCircle, XCircle, Clock, BarChart3, Leaf, Users, FileText }
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { isAdmin } from '@/lib/auth/auth';
-import { mockProjects } from '@/lib/mockData';
+import { getAllProjects, approveProject, rejectProject } from '@/lib/projectStorage';
 import { formatCurrency } from '@/lib/utils';
 
 export default function AdminPanel() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending_validation' | 'active' | 'rejected'>('all');
+  const [projects, setProjects] = useState(getAllProjects());
 
   useEffect(() => {
     setMounted(true);
     if (!isAdmin()) {
       router.push('/login');
     }
+    setProjects(getAllProjects());
   }, [router]);
+
+  const handleApprove = (id: string) => {
+    approveProject(id);
+    setProjects(getAllProjects());
+    alert('Proyecto aprobado exitosamente!');
+  };
+
+  const handleReject = (id: string) => {
+    if (confirm('¿Estás seguro de que quieres rechazar este proyecto?')) {
+      rejectProject(id);
+      setProjects(getAllProjects());
+      alert('Proyecto rechazado');
+    }
+  };
 
   if (!mounted) {
     return null;
@@ -29,15 +45,15 @@ export default function AdminPanel() {
     return null;
   }
 
-  const filteredProjects = mockProjects.filter(p =>
+  const filteredProjects = projects.filter(p =>
     filter === 'all' || p.status === filter
   );
 
   const stats = {
-    total: mockProjects.length,
-    pending: mockProjects.filter(p => p.status === 'pending_validation').length,
-    active: mockProjects.filter(p => p.status === 'active').length,
-    rejected: mockProjects.filter(p => p.status === 'rejected').length,
+    total: projects.length,
+    pending: projects.filter(p => p.status === 'pending_validation').length,
+    active: projects.filter(p => p.status === 'active').length,
+    rejected: projects.filter(p => p.status === 'rejected').length,
   };
 
   return (
@@ -193,20 +209,24 @@ export default function AdminPanel() {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-3">
-                    <button
-                      onClick={() => alert('Funcionalidad de aprobación - En producción esto actualizaría la base de datos')}
-                      className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Aprobar
-                    </button>
-                    <button
-                      onClick={() => alert('Funcionalidad de rechazo - En producción esto actualizaría la base de datos')}
-                      className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Rechazar
-                    </button>
+                    {project.status !== 'active' && (
+                      <button
+                        onClick={() => handleApprove(project.id)}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Aprobar
+                      </button>
+                    )}
+                    {project.status !== 'rejected' && (
+                      <button
+                        onClick={() => handleReject(project.id)}
+                        className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Rechazar
+                      </button>
+                    )}
                     <button
                       onClick={() => router.push(`/proyecto/${project.id}`)}
                       className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"

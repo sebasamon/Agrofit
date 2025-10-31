@@ -1,14 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { FinancingType } from '@/types';
+import { FinancingType, Project } from '@/types';
+import { addProject } from '@/lib/projectStorage';
+import { getCurrentUser } from '@/lib/auth/auth';
 
 export default function RegistroAgricultor() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 4;
+  const [user, setUser] = useState<ReturnType<typeof getCurrentUser>>(null);
+
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      router.push('/login');
+      return;
+    }
+    setUser(currentUser);
+  }, [router]);
 
   const [formData, setFormData] = useState({
     // Personal & Farm Info
@@ -73,10 +87,112 @@ export default function RegistroAgricultor() {
     if (step > 1) setStep(step - 1);
   };
 
+  const calculateESGScore = () => {
+    // Environmental score (0-100)
+    let envScore = 50; // base
+    if (formData.hasCertifications) envScore += 20;
+    if (formData.usesOrganicPractices) envScore += 15;
+    if (formData.waterManagement === 'excellent') envScore += 10;
+    else if (formData.waterManagement === 'good') envScore += 5;
+    if (formData.renewableEnergyUsage) envScore += 10;
+
+    // Social score (0-100)
+    let socialScore = 50; // base
+    if (formData.providesStableEmployment) socialScore += 10;
+    if (formData.offersHealthBenefits) socialScore += 10;
+    if (formData.offersSocialSecurity) socialScore += 10;
+    if (formData.providesTraining) socialScore += 10;
+    if (formData.genderEquality) socialScore += 10;
+
+    // Governance score (0-100) - base on completeness and transparency
+    let govScore = 70; // base for filling out the form
+    if (formData.hasCommercialAgreements) govScore += 10;
+    if (formData.collateral) govScore += 10;
+
+    const overall = Math.round((envScore + socialScore + govScore) / 3);
+
+    return {
+      environmental: Math.min(envScore, 100),
+      social: Math.min(socialScore, 100),
+      governance: Math.min(govScore, 100),
+      overall: Math.min(overall, 100)
+    };
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí se enviaría el formulario
-    alert('Formulario enviado exitosamente! (En producción, esto se conectaría a una API)');
+
+    if (!user) {
+      alert('Debes iniciar sesión para registrar un proyecto');
+      router.push('/login');
+      return;
+    }
+
+    // Create project object
+    const newProject: Project = {
+      id: `project-${Date.now()}`,
+      farmerId: user.id,
+      farmerProfile: {
+        userId: user.id,
+        farmName: formData.farmName,
+        location: {
+          department: formData.department,
+          municipality: formData.municipality,
+        },
+        cropType: formData.cropType,
+        farmSize: parseFloat(formData.farmSize),
+        yearsOfExperience: parseInt(formData.yearsOfExperience),
+        phoneNumber: formData.phoneNumber,
+      },
+      economicData: {
+        annualProduction: parseFloat(formData.annualProduction),
+        averageYield: parseFloat(formData.averageYield),
+        averagePrice: parseFloat(formData.averagePrice),
+        annualRevenue: parseFloat(formData.annualRevenue),
+        productionCosts: parseFloat(formData.productionCosts),
+        netIncome: parseFloat(formData.annualRevenue) - parseFloat(formData.productionCosts),
+        hasCommercialAgreements: formData.hasCommercialAgreements,
+        buyers: formData.buyers ? formData.buyers.split(',').map(b => b.trim()) : undefined,
+      },
+      environmentalData: {
+        hasCertifications: formData.hasCertifications,
+        certifications: formData.certifications ? formData.certifications.split(',').map(c => c.trim()) : undefined,
+        usesOrganicPractices: formData.usesOrganicPractices,
+        waterManagement: formData.waterManagement as 'excellent' | 'good' | 'fair' | 'poor',
+        soilConservation: formData.soilConservation as 'excellent' | 'good' | 'fair' | 'poor',
+        biodiversityProtection: formData.biodiversityProtection as 'excellent' | 'good' | 'fair' | 'poor',
+        renewableEnergyUsage: formData.renewableEnergyUsage,
+      },
+      socialData: {
+        numberOfEmployees: parseInt(formData.numberOfEmployees),
+        providesStableEmployment: formData.providesStableEmployment,
+        offersHealthBenefits: formData.offersHealthBenefits,
+        offersSocialSecurity: formData.offersSocialSecurity,
+        providesTraining: formData.providesTraining,
+        communityImpact: formData.communityImpact,
+        genderEquality: formData.genderEquality,
+        percentageFemaleEmployees: formData.percentageFemaleEmployees ? parseInt(formData.percentageFemaleEmployees) : undefined,
+      },
+      financingNeeds: {
+        amount: parseFloat(formData.amount),
+        financingType: formData.financingType,
+        purpose: formData.purpose,
+        term: parseInt(formData.term),
+        expectedReturn: formData.expectedReturn ? parseFloat(formData.expectedReturn) : undefined,
+        collateral: formData.collateral || undefined,
+      },
+      esgScore: calculateESGScore(),
+      status: 'pending_validation',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isPublic: false,
+    };
+
+    // Save to localStorage
+    addProject(newProject);
+
+    alert('¡Proyecto registrado exitosamente! Está en espera de aprobación por el administrador.');
+    router.push('/');
   };
 
   return (

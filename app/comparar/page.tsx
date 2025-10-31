@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { ArrowLeft, Leaf, Users, Shield, DollarSign, MapPin, TrendingUp } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { mockProjects } from '@/lib/mockData';
+import { getActiveProjects } from '@/lib/projectStorage';
 import { formatCurrency, getFinancingTypeLabel, getESGColor } from '@/lib/utils';
 
 export default function CompararProyectos() {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+  const allProjects = getActiveProjects();
 
   const toggleProject = (id: string) => {
     if (selectedProjects.includes(id)) {
@@ -21,7 +22,7 @@ export default function CompararProyectos() {
     }
   };
 
-  const projectsToCompare = mockProjects.filter(p => selectedProjects.includes(p.id));
+  const projectsToCompare = allProjects.filter(p => selectedProjects.includes(p.id));
 
   return (
     <main>
@@ -47,7 +48,7 @@ export default function CompararProyectos() {
             Selecciona Proyectos para Comparar ({selectedProjects.length}/4)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {mockProjects.map((project) => (
+            {allProjects.map((project) => (
               <button
                 key={project.id}
                 onClick={() => toggleProject(project.id)}
