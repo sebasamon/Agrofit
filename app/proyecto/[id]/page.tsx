@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ESGBadge from '@/components/ESGBadge';
 import ReportButtons from '@/components/ReportButtons';
-import { getProjectById } from '@/lib/mockData';
+import { getProjectById } from '@/lib/projectStorage';
 import { formatCurrency, formatNumber, getFinancingTypeLabel } from '@/lib/utils';
 
 export default async function ProyectoDetalle({ params }: { params: Promise<{ id: string }> }) {

@@ -11,7 +11,7 @@ export interface User {
 const STORAGE_KEY = 'agrofit_users';
 const SESSION_KEY = 'agrofit_session';
 
-// Initialize with admin user
+// Initialize with admin user and test users
 const initializeUsers = (): User[] => {
   if (typeof window === 'undefined') return [];
 
@@ -20,13 +20,27 @@ const initializeUsers = (): User[] => {
     return JSON.parse(stored);
   }
 
-  // Create default admin user
+  // Create default users
   const defaultUsers: User[] = [
     {
       id: 'admin-1',
       email: 'admin',
       name: 'Administrador',
       role: 'admin',
+      password: '1234'
+    },
+    {
+      id: 'farmer-demo',
+      email: 'agricultor@demo.com',
+      name: 'Pedro Agricultor',
+      role: 'farmer',
+      password: '1234'
+    },
+    {
+      id: 'investor-demo',
+      email: 'inversionista@demo.com',
+      name: 'María Inversionista',
+      role: 'investor',
       password: '1234'
     }
   ];
