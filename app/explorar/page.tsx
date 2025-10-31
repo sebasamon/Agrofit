@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Search, GitCompare } from 'lucide-react';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
@@ -218,11 +219,18 @@ export default function ExplorarProyectos() {
           )}
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6">
+        {/* Results Count and Compare Button */}
+        <div className="mb-6 flex items-center justify-between">
           <p className="text-gray-600">
             Mostrando <strong>{filteredProjects.length}</strong> de <strong>{allProjects.length}</strong> proyectos
           </p>
+          <Link
+            href="/comparar"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <GitCompare className="h-5 w-5 mr-2" />
+            Comparar Proyectos
+          </Link>
         </div>
 
         {/* Projects Grid */}
