@@ -13,6 +13,9 @@ export interface User {
 // Tipos de financiamiento
 export type FinancingType = 'credit' | 'equity' | 'guarantee' | 'mixed';
 
+// Tipo de proyecto según ESG dominante
+export type ProjectType = 'environmental' | 'social' | 'economic';
+
 // Información del agricultor
 export interface FarmerProfile {
   userId: string;

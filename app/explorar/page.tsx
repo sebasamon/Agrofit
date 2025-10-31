@@ -7,7 +7,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
 import { getActiveProjects } from '@/lib/projectStorage';
-import { FinancingType, ProjectPreview } from '@/types';
+import { FinancingType, ProjectPreview, ProjectType } from '@/types';
+import { getProjectType, getProjectTypeLabel, getProjectTypeIcon, getProjectTypeColor } from '@/lib/projectUtils';
 
 export default function ExplorarProyectos() {
   const activeProjects = getActiveProjects();
@@ -32,6 +33,7 @@ export default function ExplorarProyectos() {
   const [selectedCropType, setSelectedCropType] = useState('');
   const [selectedFinancingType, setSelectedFinancingType] = useState<FinancingType | ''>('');
   const [minESGScore, setMinESGScore] = useState(0);
+  const [selectedProjectType, setSelectedProjectType] = useState<ProjectType | ''>('');
 
   // Apply filters
   const applyFilters = () => {
@@ -67,6 +69,11 @@ export default function ExplorarProyectos() {
       filtered = filtered.filter((p) => p.esgScore.overall >= minESGScore);
     }
 
+    // Project Type
+    if (selectedProjectType) {
+      filtered = filtered.filter((p) => getProjectType(p.esgScore) === selectedProjectType);
+    }
+
     setFilteredProjects(filtered);
   };
 
@@ -77,6 +84,7 @@ export default function ExplorarProyectos() {
     setSelectedCropType('');
     setSelectedFinancingType('');
     setMinESGScore(0);
+    setSelectedProjectType('');
     setFilteredProjects(allProjects);
   };
 
@@ -94,6 +102,65 @@ export default function ExplorarProyectos() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Project Type Filter Buttons */}
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Filtrar por Tipo de Proyecto:</h3>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => {
+                setSelectedProjectType('');
+                setTimeout(applyFilters, 0);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                selectedProjectType === ''
+                  ? 'bg-primary-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              🔍 Todos los Proyectos
+            </button>
+            <button
+              onClick={() => {
+                setSelectedProjectType('environmental');
+                setTimeout(applyFilters, 0);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all border ${
+                selectedProjectType === 'environmental'
+                  ? 'bg-green-600 text-white shadow-md border-green-600'
+                  : 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100'
+              }`}
+            >
+              🌱 Proyectos Ambientales
+            </button>
+            <button
+              onClick={() => {
+                setSelectedProjectType('social');
+                setTimeout(applyFilters, 0);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all border ${
+                selectedProjectType === 'social'
+                  ? 'bg-blue-600 text-white shadow-md border-blue-600'
+                  : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100'
+              }`}
+            >
+              👥 Proyectos Sociales
+            </button>
+            <button
+              onClick={() => {
+                setSelectedProjectType('economic');
+                setTimeout(applyFilters, 0);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all border ${
+                selectedProjectType === 'economic'
+                  ? 'bg-yellow-600 text-white shadow-md border-yellow-600'
+                  : 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100'
+              }`}
+            >
+              💰 Proyectos Económicos
+            </button>
+          </div>
+        </div>
+
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg shadow-md p-4 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
@@ -119,7 +186,7 @@ export default function ExplorarProyectos() {
             >
               <Filter className="h-5 w-5 mr-2" />
               Filtros
-              {(selectedDepartment || selectedCropType || selectedFinancingType || minESGScore > 0) && (
+              {(selectedDepartment || selectedCropType || selectedFinancingType || minESGScore > 0 || selectedProjectType) && (
                 <span className="ml-2 bg-primary-600 text-white text-xs px-2 py-1 rounded-full">
                   Activos
                 </span>

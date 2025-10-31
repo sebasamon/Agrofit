@@ -2,16 +2,27 @@ import Link from 'next/link';
 import { MapPin, TrendingUp, Leaf, Users, DollarSign } from 'lucide-react';
 import { ProjectPreview } from '@/types';
 import { formatCurrency, getFinancingTypeLabel, getESGColor, getESGBgColor } from '@/lib/utils';
+import { getProjectType, getProjectTypeLabel, getProjectTypeIcon, getProjectTypeColor } from '@/lib/projectUtils';
 
 interface ProjectCardProps {
   project: ProjectPreview;
 }
 
 export default function ProjectCard({ project }: ProjectCardProps) {
+  const projectType = getProjectType(project.esgScore);
+  const projectTypeLabel = getProjectTypeLabel(projectType);
+  const projectTypeIcon = getProjectTypeIcon(projectType);
+  const projectTypeColor = getProjectTypeColor(projectType);
+
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group">
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200 overflow-hidden">
+        {/* Project Type Badge */}
+        <div className={`absolute top-3 left-3 ${projectTypeColor} px-3 py-1 rounded-full text-xs font-semibold z-10 border`}>
+          {projectTypeIcon} {projectTypeLabel}
+        </div>
+
         {project.featured && (
           <div className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-semibold z-10">
             Destacado
